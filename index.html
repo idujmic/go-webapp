@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>NBA Games</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.css">
+</head>
+<body>
+<div class="row">
+    <div class="col-4">
+        <div class="list-group" id="list-tab" role="tablist">
+
+            {{range $index, $value := .Data}}
+                {{$cnt_1 := $index}}
+                {{$cnt_2 :=$index}}
+                <a class="list-group-item list-group-item-action " id="item" data-bs-toggle="list" href="#list" role="tab" aria-controls="home">
+                    {{$value.HomeTeam.FullName}} - {{$value.VisitorTeam.FullName}} {{$value.HomeTeamScore}} : {{$value.VisitorTeamScore}}
+                </a>
+            {{end}}
+        </div>
+    </div>
+    <div class="col-8">
+        <div class="tab-content" id="nav-tabContent">
+            {{range $index, $value := .Data}}
+                {{$cnt_1 := $index}}
+                {{$cnt_2 :=$index}}
+                <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="item">
+                    {{$value.HomeTeam.FullName}} - {{$value.VisitorTeam.FullName}} {{$value.HomeTeamScore}} : {{$value.VisitorTeamScore}}
+                </div>
+            {{end}}
+        </div>
+    </div>
+</div>
+<script src="assets/js/bootstrap.js"></script>
+</body>
+</html>
