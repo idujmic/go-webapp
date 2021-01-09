@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -35,7 +36,20 @@ type Team struct{
 func openDBConncection(){
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
-	client,_ = mongo.Connect(ctx, clientOptions)
+	var err error
+	client,err = mongo.Connect(ctx, clientOptions)
+	if err != nil{
+		log.Fatal(err)
+	}
+	fmt.Println("Connection with the database is open")
+}
+func closeDBConnection(){
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err := client.Disconnect(ctx)
+	if err != nil{
+		log.Fatal(err)
+	}
+	fmt.Println("Connection closed")
 }
 func getAllGames() []Game {
 	var games []Game

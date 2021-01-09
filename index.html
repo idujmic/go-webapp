@@ -1,31 +1,113 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>NBA Games</title>
-    <link rel="stylesheet" href="/assets/css/bootstrap.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.79.0">
+    <title>NBA games</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/offcanvas/">
+
+
+
+    <!-- Bootstrap core CSS -->
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+
+
+    <!-- Custom styles for this template -->
+    <link href="/assets/css/offcanvas.css" rel="stylesheet">
 </head>
-<body>
-<div class="row">
-    <div class="col-4">
-        <div class="list-group" id="list-tab" role="tablist">
-            {{range $index, $value := .Data}}
-                <a class="list-group-item list-group-item-action " id="item-{{$index}}" data-bs-toggle="list" href="#list-{{$index}}" role="tab" aria-controls="home">
-                    {{$value.HomeTeam.FullName}} - {{$value.VisitorTeam.FullName}} {{$value.HomeTeamScore}} : {{$value.VisitorTeamScore}}
-                </a>
-            {{end}}
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark" aria-label="Main navigation">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">NBA Games</a>
+        <button class="navbar-toggler p-0 border-0" type="button" data-bs-toggle="offcanvas" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</nav>
+
+
+<main class="container">
+    <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm">
+        <div class="lh-1">
+            <h1 class="h6 mb-0 text-white lh-1">NBA Games taken from Free NBA API Documentation</h1>
         </div>
     </div>
-    <div class="col-8">
-        <div class="tab-content" id="nav-tabContent">
-            {{range $index, $value := .Data}}
-                <div class="tab-pane fade" id="list-{{$index}}" role="tabpanel" aria-labelledby="item-{{$index}}">
-                    {{$value.HomeTeam.FullName}} - {{$value.VisitorTeam.FullName}} {{$value.HomeTeamScore}} : {{$value.VisitorTeamScore}}
-                </div>
-            {{end}}
-        </div>
+
+    <div class="my-3 p-3 bg-white rounded shadow-sm">
+        <h6 class="border-bottom pb-2 mb-0">NBA Games</h6>
+            <div class="accordion accordion-flush" id="accordionFlushExample">
+                {{range $index, $value := .Data}}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="flush-heading-{{$index}}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-{{$index}}" aria-expanded="false" aria-controls="flush-collapse-{{$index}}">
+                                {{$value.HomeTeam.FullName}} - {{$value.VisitorTeam.FullName}} {{$value.HomeTeamScore}} : {{$value.VisitorTeamScore}}
+                            </button>
+                        </h2>
+                        <div id="flush-collapse-{{$index}}" class="accordion-collapse collapse" aria-labelledby="flush-heading-{{$index}}" data-bs-parent="#accordionFlushExample">
+                            <div class="accordion-body">
+                                <table class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Team Name</th>
+                                        <th scope="col">Team City</th>
+                                        <th scope="col">Team Conference</th>
+                                        <th scope="col">Team Division</th>
+                                        <th scope="col">Team Score</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <th scope="row">Home</th>
+                                        <td>{{$value.HomeTeam.FullName}}</td>
+                                        <td>{{$value.HomeTeam.City}}</td>
+                                        <td>{{$value.HomeTeam.Conference}}</td>
+                                        <td>{{$value.HomeTeam.Division}}</td>
+                                        <td>{{$value.HomeTeamScore}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Away</th>
+                                        <td>{{$value.VisitorTeam.FullName}}</td>
+                                        <td>{{$value.VisitorTeam.City}}</td>
+                                        <td>{{$value.VisitorTeam.Conference}}</td>
+                                        <td>{{$value.VisitorTeam.Division}}</td>
+                                        <td>{{$value.VisitorTeamScore}}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {{end}}
+            </div>
     </div>
-</div>
-<script src="assets/js/bootstrap.js"></script>
+
+</main>
+
+
+<script src="/assets/js/bootstrap.bundle.min.js"></script>
+
+<script src="/assets/js/offcanvas.js"></script>
 </body>
 </html>

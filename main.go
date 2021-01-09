@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -14,7 +16,6 @@ import (
 type GameData struct{
 	Data []Game `json:"data"`
 }
-
 
 func GetApiGames(response http.ResponseWriter, request *http.Request){
 
@@ -33,13 +34,12 @@ func GetApiGames(response http.ResponseWriter, request *http.Request){
 	var f GameData
 
 	_ = json.Unmarshal(body, &f)
-	//fmt.Println(res)
-	//fmt.Println(string(body))
 
 	//json.NewEncoder(response).Encode(f)
 	collection := client.Database("ivandb").Collection("games")
 
 	for _,game :=range f.Data{
+		game.Date = strings.Split(game.Date, "T")[0]
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 		collection.InsertOne(ctx, game)
 	}
@@ -50,11 +50,13 @@ func getGames(response http.ResponseWriter, request *http.Request){
 	var gameData = GameData{
 		Data: games,
 	}
+	fmt.Println(gameData)
 	t, _:= template.ParseFiles("index.html")
 	t.Execute(response, gameData)
 }
 func main() {
 	openDBConncection()
+	defer closeDBConnection()
 	router := mux.NewRouter()
 	router.HandleFunc("/api", GetApiGames).Methods("GET")
 	router.HandleFunc("/", getGames).Methods("GET")
