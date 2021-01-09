@@ -4,41 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"time"
-	"html/template"
 )
 
-var client *mongo.Client
 
 type GameData struct{
 	Data []Game `json:"data"`
 }
-type Game struct {
-	ID int `json:"id"`
-	Date string `json:"date,omitempty"`
-	HomeTeam Team `json:"home_team,omitempty"`
-	HomeTeamScore int `json:"home_team_score"`
-	Period int `json:"period"`
-	PostSeason bool `json:"post_season"`
-	Season int `json:"season"`
-	Status string `json:"status"`
-	Time string `json:"time"`
-	VisitorTeam Team `json:"visitor_team"`
-	VisitorTeamScore int `json:"visitor_team_score"`
-}
-type Team struct{
-	ID int `json:"id"`
-	Abbrevation string `json:"abbrevation"`
-	City string `json:"city"`
-	Conference string `json:"conference"`
-	Division string `json:"division"`
-	FullName string `json:"full_name"`
-	Name string `json:"name"`
-}
+
 
 func GetApiGames(response http.ResponseWriter, request *http.Request){
 
@@ -67,15 +43,21 @@ func GetApiGames(response http.ResponseWriter, request *http.Request){
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 		collection.InsertOne(ctx, game)
 	}
-	t,_ := template.ParseFiles("index.html")
-	t.Execute(response, f)
+}
+
+func getGames(response http.ResponseWriter, request *http.Request){
+	var games []Game = getAllGames()
+	var gameData = GameData{
+		Data: games,
+	}
+	t, _:= template.ParseFiles("index.html")
+	t.Execute(response, gameData)
 }
 func main() {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
-	client, _ = mongo.Connect(ctx, clientOptions)
+	openDBConncection()
 	router := mux.NewRouter()
 	router.HandleFunc("/api", GetApiGames).Methods("GET")
+	router.HandleFunc("/", getGames).Methods("GET")
 	fileServer := http.FileServer(http.Dir("./assets"))
 	router.PathPrefix("/assets").Handler(http.StripPrefix("/assets", fileServer))
 	http.ListenAndServe(":12345", router)

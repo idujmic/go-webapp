@@ -9,11 +9,8 @@
 <div class="row">
     <div class="col-4">
         <div class="list-group" id="list-tab" role="tablist">
-
             {{range $index, $value := .Data}}
-                {{$cnt_1 := $index}}
-                {{$cnt_2 :=$index}}
-                <a class="list-group-item list-group-item-action " id="item" data-bs-toggle="list" href="#list" role="tab" aria-controls="home">
+                <a class="list-group-item list-group-item-action " id="item-{{$index}}" data-bs-toggle="list" href="#list-{{$index}}" role="tab" aria-controls="home">
                     {{$value.HomeTeam.FullName}} - {{$value.VisitorTeam.FullName}} {{$value.HomeTeamScore}} : {{$value.VisitorTeamScore}}
                 </a>
             {{end}}
@@ -22,9 +19,7 @@
     <div class="col-8">
         <div class="tab-content" id="nav-tabContent">
             {{range $index, $value := .Data}}
-                {{$cnt_1 := $index}}
-                {{$cnt_2 :=$index}}
-                <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="item">
+                <div class="tab-pane fade" id="list-{{$index}}" role="tabpanel" aria-labelledby="item-{{$index}}">
                     {{$value.HomeTeam.FullName}} - {{$value.VisitorTeam.FullName}} {{$value.HomeTeamScore}} : {{$value.VisitorTeamScore}}
                 </div>
             {{end}}
