@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -35,9 +36,9 @@ type Team struct{
 	Name string `json:"name"`
 }
 type Comment struct {
-	ID int `json:"id"`
+	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	Username string `json:"username"`
 	Content string `json:"content"`
-	Author string `json:"author"`
 }
 func openDBConncection(){
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)

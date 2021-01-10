@@ -55,10 +55,12 @@ func getGames(response http.ResponseWriter, request *http.Request){
 }
 func postComment(response http.ResponseWriter, request * http.Request){
 	fmt.Println("Ođeka")
-	request.ParseForm()
-	for key, value := range request.Form{
-		fmt.Printf("%s = %s\n", key, value )
+	var comment Comment
+	err := json.NewDecoder(request.Body).Decode(&comment)
+	if err != nil{
+		fmt.Println(err)
 	}
+	fmt.Println(comment)
 }
 func main() {
 	openDBConncection()
