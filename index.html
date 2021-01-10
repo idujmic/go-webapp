@@ -6,6 +6,10 @@
     <meta name="description" content="">
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.79.0">
+    <script src="/assets/js/jquery-3.5.1.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+    <script src="http://malsup.github.com/jquery.form.js"></script>
+    <script src="assets/js/script.js"></script>
     <title>NBA games</title>
 
     <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/offcanvas/">
@@ -53,7 +57,6 @@
             <h1 class="h6 mb-0 text-white lh-1">NBA Games taken from Free NBA API Documentation</h1>
         </div>
     </div>
-
     <div class="my-3 p-3 bg-white rounded shadow-sm">
         <h6 class="border-bottom pb-2 mb-0">NBA Games</h6>
             <div class="accordion accordion-flush" id="accordionFlushExample">
@@ -96,6 +99,37 @@
                                     </tr>
                                     </tbody>
                                 </table>
+                                <div class="row g-3">
+                                    <div class="col-md-7 col-lg-8">
+                                        <h4 class="mb-3">Comments</h4>
+                                        <form action="/postComment" method="POST">
+
+                                            <!-- NAME -->
+                                            <div id="name-group" class="form-group">
+                                                <label for="name">Name</label>
+                                                <input type="text" class="form-control" name="name" placeholder="Henry Pym">
+                                                <!-- errors will go here -->
+                                            </div>
+
+                                            <!-- EMAIL -->
+                                            <div id="email-group" class="form-group">
+                                                <label for="email">Email</label>
+                                                <input type="text" class="form-control" name="email" placeholder="rudd@avengers.com">
+                                                <!-- errors will go here -->
+                                            </div>
+
+                                            <!-- SUPERHERO ALIAS -->
+                                            <div id="superhero-group" class="form-group">
+                                                <label for="superheroAlias">Superhero Alias</label>
+                                                <input type="text" class="form-control" name="superheroAlias" placeholder="Ant Man">
+                                                <!-- errors will go here -->
+                                            </div>
+
+                                            <button type="submit" class="btn btn-success">Submit <span class="fa fa-arrow-right"></span></button>
+
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -107,7 +141,6 @@
 
 
 <script src="/assets/js/bootstrap.bundle.min.js"></script>
-
 <script src="/assets/js/offcanvas.js"></script>
 </body>
 </html>

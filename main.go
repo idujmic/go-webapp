@@ -50,9 +50,15 @@ func getGames(response http.ResponseWriter, request *http.Request){
 	var gameData = GameData{
 		Data: games,
 	}
-	fmt.Println(gameData)
 	t, _:= template.ParseFiles("index.html")
 	t.Execute(response, gameData)
+}
+func postComment(response http.ResponseWriter, request * http.Request){
+	fmt.Println("Ođeka")
+	request.ParseForm()
+	for key, value := range request.Form{
+		fmt.Printf("%s = %s\n", key, value )
+	}
 }
 func main() {
 	openDBConncection()
@@ -60,6 +66,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/api", GetApiGames).Methods("GET")
 	router.HandleFunc("/", getGames).Methods("GET")
+	router.HandleFunc("/postComment", postComment).Methods("POST")
 	fileServer := http.FileServer(http.Dir("./assets"))
 	router.PathPrefix("/assets").Handler(http.StripPrefix("/assets", fileServer))
 	http.ListenAndServe(":12345", router)

@@ -23,6 +23,7 @@ type Game struct {
 	Time string `json:"time"`
 	VisitorTeam Team `json:"visitor_team"`
 	VisitorTeamScore int `json:"visitor_team_score"`
+	Comments [] Comment `json:"comments,omitempty"`
 }
 type Team struct{
 	ID int `json:"id"`
@@ -32,6 +33,11 @@ type Team struct{
 	Division string `json:"division"`
 	FullName string `json:"full_name"`
 	Name string `json:"name"`
+}
+type Comment struct {
+	ID int `json:"id"`
+	Content string `json:"content"`
+	Author string `json:"author"`
 }
 func openDBConncection(){
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -69,4 +75,16 @@ func getAllGames() []Game {
 		log.Fatal(err)
 	}
 	return games
+}
+func getCommentsForGameId(id int) []Comment{
+	var game Game
+	var comments []Comment
+	collection := client.Database("ivandb").Collection("games")
+	ctx, _ := context.WithTimeout(context.Background(), 30 * time.Second)
+	err := collection.FindOne(ctx, Game{ID: id}).Decode(&game)
+	if err != nil{
+		log.Fatal(err)
+	}
+	comments = game.Comments
+	return comments
 }
