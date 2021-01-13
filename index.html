@@ -73,6 +73,7 @@
                                     <thead>
                                     <tr>
                                         <th scope="col">#</th>
+                                        <th scope="col">ID</th>
                                         <th scope="col">Team Name</th>
                                         <th scope="col">Team City</th>
                                         <th scope="col">Team Conference</th>
@@ -83,6 +84,7 @@
                                     <tbody>
                                     <tr>
                                         <th scope="row">Home</th>
+                                        <td>{{$value.ID}}</td>
                                         <td>{{$value.HomeTeam.FullName}}</td>
                                         <td>{{$value.HomeTeam.City}}</td>
                                         <td>{{$value.HomeTeam.Conference}}</td>
@@ -91,6 +93,7 @@
                                     </tr>
                                     <tr>
                                         <th scope="row">Away</th>
+                                        <td>{{$value.ID}}</td>
                                         <td>{{$value.VisitorTeam.FullName}}</td>
                                         <td>{{$value.VisitorTeam.City}}</td>
                                         <td>{{$value.VisitorTeam.Conference}}</td>
@@ -102,8 +105,22 @@
                                 <div class="row g-3">
                                     <div class="col-md-7 col-lg-8">
                                         <h4 class="mb-3">Comments</h4>
+                                        {{if $value.Comments}}
+                                            {{range $i, $v := $value.Comments}}
+                                                <div class="d-flex text-muted pt-3">
+                                                    <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false">
+                                                        <title>Placeholder</title>
+                                                        <rect width="100%" height="100%" fill="#e83e8c"/><text x="50%" y="50%" fill="#e83e8c" dy=".3em">32x32</text>
+                                                    </svg>
+                                                    <p class="pb-3 mb-0 small lh-sm border-bottom">
+                                                        <strong class="d-block text-gray-dark">{{$v.Username}}</strong>
+                                                        {{$v.Content}}
+                                                    </p>
+                                                </div>
+                                            {{end}}
+                                        {{end}}
                                         <form action="/postComment" method="POST">
-
+                                            <input type="hidden" id="game_id" name="game_id"  value="{{$value.ID}}">
                                             <!-- NAME -->
                                             <div id="name-group" class="form-group">
                                                 <label for="username">Name</label>

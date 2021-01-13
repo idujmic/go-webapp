@@ -13,17 +13,17 @@ import (
 
 var client *mongo.Client
 type Game struct {
-	ID int `json:"id"`
-	Date string `json:"date,omitempty"`
-	HomeTeam Team `json:"home_team,omitempty"`
-	HomeTeamScore int `json:"home_team_score"`
-	Period int `json:"period"`
-	PostSeason bool `json:"post_season"`
-	Season int `json:"season"`
-	Status string `json:"status"`
-	Time string `json:"time"`
-	VisitorTeam Team `json:"visitor_team"`
-	VisitorTeamScore int `json:"visitor_team_score"`
+	ID               int    `json:"id"`
+	Date             string `json:"date,omitempty"`
+	HomeTeam         Team   `json:"home_team,omitempty"`
+	HomeTeamScore    int    `json:"home_team_score"`
+	Period           int    `json:"period"`
+	PostSeason       bool   `json:"post_season"`
+	Season           int    `json:"season"`
+	Status           string `json:"status"`
+	Time             string `json:"time"`
+	VisitorTeam      Team   `json:"visitor_team"`
+	VisitorTeamScore int    `json:"visitor_team_score"`
 	Comments [] Comment `json:"comments,omitempty"`
 }
 type Team struct{
@@ -77,15 +77,44 @@ func getAllGames() []Game {
 	}
 	return games
 }
+func getGameById(gameId int) Game{
+	fmt.Println(gameId)
+	var game Game
+	collection := client.Database("ivandb").Collection("games")
+	ctx, _ := context.WithTimeout(context.Background(), 30 * time.Second)
+	err := collection.FindOne(ctx, bson.M{"id" : gameId}).Decode(&game)
+	if err!=nil{
+		log.Fatal(err)
+	}
+	return game
+}
+func updateGame(game Game){
+	fmt.Println(game.Comments)
+	collection := client.Database("ivandb").Collection("games")
+	ctx, _ := context.WithTimeout(context.Background(), 30 * time.Second)
+	result, err := collection.UpdateOne(
+		ctx,
+		bson.M{"id": game.ID},
+		bson.D{
+			{"$set", bson.D{{"comments", game.Comments}}},
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Updated %v Documents!\n", result.ModifiedCount)
+}
+func createComment(comment Comment, gameId int){
+	var game Game
+	game = getGameById(gameId)
+	fmt.Println(game)
+	game.Comments = append(game.Comments, comment)
+	updateGame(game)
+}
 func getCommentsForGameId(id int) []Comment{
 	var game Game
 	var comments []Comment
-	collection := client.Database("ivandb").Collection("games")
-	ctx, _ := context.WithTimeout(context.Background(), 30 * time.Second)
-	err := collection.FindOne(ctx, Game{ID: id}).Decode(&game)
-	if err != nil{
-		log.Fatal(err)
-	}
+	game = getGameById(id)
 	comments = game.Comments
 	return comments
 }

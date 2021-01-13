@@ -5,7 +5,8 @@ $(document).ready(function() {
         // there are many ways to get this data using jQuery (you can use the class or id also)
         var formData = {
             'username'              : $(this).find('input[name=username]').val(),
-            'content'             : $(this).find('input[name=content]').val()
+            'content'             : $(this).find('input[name=content]').val(),
+            'game_id'               :$(this).find('input[name=game_id]').val(),
         };
         // process the form
         $.ajax({
@@ -17,10 +18,10 @@ $(document).ready(function() {
             encode          : true
         })
             // using the done promise callback
-            .done(function(data) {
+            .done(function(formData) {
 
                 // log data to the console so we can see
-                console.log(data);
+                console.log(formData);
 
                 // here we will handle errors and validation messages
             });

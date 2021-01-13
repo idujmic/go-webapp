@@ -7,7 +7,9 @@ import (
 	"github.com/gorilla/mux"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -50,17 +52,29 @@ func getGames(response http.ResponseWriter, request *http.Request){
 	var gameData = GameData{
 		Data: games,
 	}
+	for _,game := range games{
+		fmt.Println(game.Comments)
+	}
 	t, _:= template.ParseFiles("index.html")
 	t.Execute(response, gameData)
 }
 func postComment(response http.ResponseWriter, request * http.Request){
-	fmt.Println("Ođeka")
 	var comment Comment
-	err := json.NewDecoder(request.Body).Decode(&comment)
-	if err != nil{
-		fmt.Println(err)
+	var gameId int
+	data := make(map[string]interface{})
+	body, _ := ioutil.ReadAll(request.Body)
+	e := json.Unmarshal(body, &data)
+	if e != nil {
+		log.Fatal(e)
 	}
+	gameId, _ = strconv.Atoi(data["game_id"].(string))
+	fmt.Println(gameId)
+	comment = Comment{Content: data["content"].(string),
+		Username: data["username"].(string),
+	}
+
 	fmt.Println(comment)
+	createComment(comment, gameId)
 }
 func main() {
 	openDBConncection()
