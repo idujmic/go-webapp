@@ -78,7 +78,6 @@ func getAllGames() []Game {
 	return games
 }
 func getGameById(gameId int) Game{
-	fmt.Println(gameId)
 	var game Game
 	collection := client.Database("ivandb").Collection("games")
 	ctx, _ := context.WithTimeout(context.Background(), 30 * time.Second)
@@ -89,7 +88,6 @@ func getGameById(gameId int) Game{
 	return game
 }
 func updateGame(game Game){
-	fmt.Println(game.Comments)
 	collection := client.Database("ivandb").Collection("games")
 	ctx, _ := context.WithTimeout(context.Background(), 30 * time.Second)
 	result, err := collection.UpdateOne(
@@ -107,7 +105,6 @@ func updateGame(game Game){
 func createComment(comment Comment, gameId int){
 	var game Game
 	game = getGameById(gameId)
-	fmt.Println(game)
 	game.Comments = append(game.Comments, comment)
 	updateGame(game)
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
 	"io/ioutil"
@@ -52,9 +51,6 @@ func getGames(response http.ResponseWriter, request *http.Request){
 	var gameData = GameData{
 		Data: games,
 	}
-	for _,game := range games{
-		fmt.Println(game.Comments)
-	}
 	t, _:= template.ParseFiles("index.html")
 	t.Execute(response, gameData)
 }
@@ -68,12 +64,10 @@ func postComment(response http.ResponseWriter, request * http.Request){
 		log.Fatal(e)
 	}
 	gameId, _ = strconv.Atoi(data["game_id"].(string))
-	fmt.Println(gameId)
 	comment = Comment{Content: data["content"].(string),
 		Username: data["username"].(string),
 	}
 
-	fmt.Println(comment)
 	createComment(comment, gameId)
 }
 func main() {
