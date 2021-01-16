@@ -1,5 +1,6 @@
 $(document).ready(function() {
     // process the form
+
     $('form').submit(function(event) {
         // get the form data
         // there are many ways to get this data using jQuery (you can use the class or id also)
@@ -33,4 +34,21 @@ $(document).ready(function() {
 
         event.preventDefault();
     });
+    //handling live updates
+    var socket = new WebSocket("ws://" + window.location.hostname + ":8080/ws")
+    console.log("Attempting websocket connection")
+    socket.onopen = () => {
+        console.log("Succesfully connected")
+    }
+    socket.onclose = (event) =>{
+        console.log("Socket Closed Connection: ", event)
+    }
+    socket.onerror = (error) =>{
+        console.log("Socket error: ", error)
+    }
+    socket.onmessage = (msg) =>{
+        console.log(msg);
+        $('#div-'.concat(msg.data)).load(document.URL +  ' #div-'.concat(msg.data));
+    }
+
 });
