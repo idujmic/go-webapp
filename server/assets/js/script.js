@@ -1,7 +1,7 @@
 $(document).ready(function() {
     // process the form
 
-    $('form').submit(function(event) {
+    $(document).on("submit", "form", function(event) {
         // get the form data
         // there are many ways to get this data using jQuery (you can use the class or id also)
         var divId = $(this).find('input[name=game_id]').val()

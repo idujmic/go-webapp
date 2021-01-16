@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"strconv"
 	"strings"
 	"time"
@@ -68,7 +69,9 @@ func postComment(response http.ResponseWriter, request *http.Request) {
 	data := make(map[string]interface{})
 	body, _ := ioutil.ReadAll(request.Body)
 	e := json.Unmarshal(body, &data)
+	reqDump,_ := httputil.DumpRequest(request, true)
 	if e != nil {
+		log.Fatal(string(reqDump))
 		log.Fatal(e)
 	}
 	gameId, _ = strconv.Atoi(data["game_id"].(string))
