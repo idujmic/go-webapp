@@ -11,17 +11,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"os"
 	"strconv"
 	"time"
+	"github.com/joho/godotenv"
+
 )
 var upgrader = websocket.Upgrader{
 	ReadBufferSize: 1024,
 	WriteBufferSize: 1024,
 }
 
-var apiKey =  "4efbe29e9259350f967c4b334cfaca3d-28d78af2-1ce9dbde"
 
-var domain ="sandboxa5aefc9af0da411ea218db36551cd093.mailgun.org"
 var conn *amqp.Connection
 var ch *amqp.Channel
 var client *mongo.Client
@@ -118,6 +119,9 @@ func SendSimpleMessage(domain, apiKey, gameId string) (string, error) {
 }
 func main(){
 	openDBConncection()
+	err := godotenv.Load(".env")
+	domain := os.Getenv("API_DOMAIN")
+	apiKey :=os.Getenv("API_KEY")
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
