@@ -4,18 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/joho/godotenv"
 	"github.com/mailgun/mailgun-go"
 	"github.com/streadway/amqp"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/mgo.v2"
 	"log"
 	"os"
 	"strconv"
 	"time"
-	"github.com/joho/godotenv"
-
 )
 var upgrader = websocket.Upgrader{
 	ReadBufferSize: 1024,
@@ -25,7 +23,8 @@ var upgrader = websocket.Upgrader{
 
 var conn *amqp.Connection
 var ch *amqp.Channel
-var client *mongo.Client
+var Session *mgo.Session
+
 type Game struct {
 	ID               int    `json:"id"`
 	Date             string `json:"date,omitempty"`
@@ -55,30 +54,70 @@ type Comment struct {
 	Content string `json:"content"`
 }
 
-func getGameById(gameId int) Game{
-	var game Game
-	collection := client.Database("ivandb").Collection("games")
-	ctx, _ := context.WithTimeout(context.Background(), 30 * time.Second)
-	err := collection.FindOne(ctx, bson.M{"id" : gameId}).Decode(&game)
-	if err!=nil{
+type MongoConfig struct {
+	mongoHost string
+	mongoPort string
+	mongoDb   string
+	username  string
+	password  string
+	collection    string
+}
+
+
+var mongoConfig MongoConfig
+
+func readMongoConfig() {
+	err := godotenv.Load(".env")
+	if err != nil{
 		log.Fatal(err)
 	}
+	mongoConfig = MongoConfig{
+		mongoHost:  os.Getenv("MONGO_HOST"),
+		mongoPort:  os.Getenv("MONGO_PORT"),
+		mongoDb:    os.Getenv("MONGO_DB"),
+		username:   os.Getenv("MONGO_USER"),
+		password:   os.Getenv("MONGO_PASS"),
+		collection: os.Getenv("MONGO_COLLECTION"),
+	}
+
+}
+
+func openDBConncection(){
+	readMongoConfig()
+	info := &mgo.DialInfo{
+		Addrs:    []string{mongoConfig.mongoHost},
+		Database: mongoConfig.mongoDb,
+		Username: mongoConfig.username,
+		Password: mongoConfig.password,
+	}
+	s, err := mgo.DialWithInfo(info)
+	if err != nil {
+		log.Printf("ERROR connecting mongo, %s ", err.Error())
+		return
+	}
+	s.SetMode(mgo.Monotonic, true)
+	Session = s
+}
+func closeDBConnection(){
+
+	Session.Close()
+}
+func getGameById(gameId int) Game{
+	sessionCopy := Session.Copy()
+	defer sessionCopy.Close()
+	var coll = sessionCopy.DB(mongoConfig.mongoDb).C(mongoConfig.collection)
+	game := Game{}
+	err := coll.Find(bson.M{"id" : gameId}).One(&game)
+	if err != nil{
+		log.Printf("ERROR: no game with id, %s", gameId)
+	}
+	fmt.Printf("INFO: found game, %+v", game)
 	return game
 }
 func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
 	}
-}
-func openDBConncection(){
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
-	var err error
-	client,err = mongo.Connect(ctx, clientOptions)
-	if err != nil{
-		log.Fatal(err)
-	}
-	fmt.Println("Connection with the database is open")
 }
 func getHtmlPreview(game Game) string {
 	lastComment := game.Comments[len(game.Comments)-1]
@@ -108,10 +147,12 @@ func SendSimpleMessage(domain, apiKey, gameId string) (string, error) {
 	defer cancel()
 
 	// Send the message with a 10 second timeout
+	fmt.Println(domain)
+	fmt.Println(apiKey)
 	resp, id, err := mg.Send(ctx, message)
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 
 	fmt.Printf("ID: %s Resp: %s\n", id, resp)
@@ -119,9 +160,11 @@ func SendSimpleMessage(domain, apiKey, gameId string) (string, error) {
 }
 func main(){
 	openDBConncection()
-	err := godotenv.Load(".env")
-	domain := os.Getenv("API_DOMAIN")
-	apiKey :=os.Getenv("API_KEY")
+
+	domain := os.Getenv("MAIL_DOMAIN")
+	fmt.Println(domain)
+	apiKey :=os.Getenv("KEY")
+	fmt.Println(apiKey)
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()

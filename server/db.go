@@ -1,17 +1,19 @@
 package main
 
 import (
-	"context"
 	"fmt"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/mgo.v2"
 	"log"
-	"time"
+	"os"
 )
 
-var client *mongo.Client
+
+var Session *mgo.Session
+
+
 type Game struct {
 	ID               int    `json:"id"`
 	Date             string `json:"date,omitempty"`
@@ -40,67 +42,86 @@ type Comment struct {
 	Username string `json:"username"`
 	Content string `json:"content"`
 }
-func openDBConncection(){
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
-	var err error
-	client,err = mongo.Connect(ctx, clientOptions)
+
+type MongoConfig struct {
+	mongoHost string
+	mongoPort string
+	mongoDb   string
+	username  string
+	password  string
+	collection    string
+}
+
+var mongoConfig MongoConfig
+
+func readMongoConfig() {
+	err := godotenv.Load(".env")
 	if err != nil{
 		log.Fatal(err)
 	}
-	fmt.Println("Connection with the database is open")
+	mongoConfig = MongoConfig{
+		mongoHost:  os.Getenv("MONGO_HOST"),
+		mongoPort:  os.Getenv("MONGO_PORT"),
+		mongoDb:    os.Getenv("MONGO_DB"),
+		username:   os.Getenv("MONGO_USER"),
+		password:   os.Getenv("MONGO_PASS"),
+		collection: os.Getenv("MONGO_COLLECTION"),
+	}
+
+}
+
+func openDBConncection(){
+	readMongoConfig()
+	info := &mgo.DialInfo{
+		Addrs:    []string{mongoConfig.mongoHost},
+		Database: mongoConfig.mongoDb,
+		Username: mongoConfig.username,
+		Password: mongoConfig.password,
+	}
+	s, err := mgo.DialWithInfo(info)
+	if err != nil {
+		log.Printf("ERROR connecting mongo, %s ", err.Error())
+		return
+	}
+	s.SetMode(mgo.Monotonic, true)
+	Session = s
 }
 func closeDBConnection(){
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err := client.Disconnect(ctx)
-	if err != nil{
-		log.Fatal(err)
-	}
-	fmt.Println("Connection closed")
+
+	Session.Close()
 }
 func getAllGames() []Game {
 	var games []Game
-	collection := client.Database("ivandb").Collection("games")
-	ctx, _ := context.WithTimeout(context.Background(), 30 * time.Second)
-	cursor, err := collection.Find(ctx, bson.M{})
+	sessionCopy := Session.Copy()
+	defer sessionCopy.Close()
+	var coll = sessionCopy.DB(mongoConfig.mongoDb).C(mongoConfig.collection)
+	err := coll.Find(bson.M{}).All(&games)
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer cursor.Close(ctx)
-	for cursor.Next(ctx){
-		var game Game
-		cursor.Decode(&game)
-		games=append(games, game)
-	}
-	if err := cursor.Err(); err != nil{
-		log.Fatal(err)
+		fmt.Printf("ERROR: fail get msgs, %s", err.Error())
 	}
 	return games
 }
 func getGameById(gameId int) Game{
-	var game Game
-	collection := client.Database("ivandb").Collection("games")
-	ctx, _ := context.WithTimeout(context.Background(), 30 * time.Second)
-	err := collection.FindOne(ctx, bson.M{"id" : gameId}).Decode(&game)
-	if err!=nil{
-		log.Fatal(err)
+	sessionCopy := Session.Copy()
+	defer sessionCopy.Close()
+	var coll = sessionCopy.DB(mongoConfig.mongoDb).C(mongoConfig.collection)
+	game := Game{}
+	err := coll.Find(bson.M{"id" : gameId}).One(&game)
+	if err != nil{
+		log.Printf("ERROR: no game with id, %s", gameId)
 	}
+	fmt.Printf("INFO: found game, %+v", game)
 	return game
 }
 func updateGame(game Game){
-	collection := client.Database("ivandb").Collection("games")
-	ctx, _ := context.WithTimeout(context.Background(), 30 * time.Second)
-	result, err := collection.UpdateOne(
-		ctx,
-		bson.M{"id": game.ID},
-		bson.D{
-			{"$set", bson.D{{"comments", game.Comments}}},
-		},
-	)
+	fmt.Println("uso u update game")
+	sessionCopy := Session.Copy()
+	defer sessionCopy.Close()
+	var coll = sessionCopy.DB(mongoConfig.mongoDb).C(mongoConfig.collection)
+	err := coll.Update(bson.M{"id": game.ID}, bson.M{"$set": bson.M{"comments": game.Comments}})
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Updated %v Documents!\n", result.ModifiedCount)
 }
 func createComment(comment Comment, gameId int){
 	var game Game

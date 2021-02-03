@@ -1,8 +1,8 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/streadway/amqp"
 	"html/template"
@@ -12,7 +12,6 @@ import (
 	"net/http/httputil"
 	"strconv"
 	"strings"
-	"time"
 )
 
 var conn *amqp.Connection
@@ -23,7 +22,8 @@ type GameData struct {
 }
 
 func GetApiGames(response http.ResponseWriter, request *http.Request) {
-
+	sessionCopy := Session.Copy()
+	defer sessionCopy.Close()
 	url := "https://free-nba.p.rapidapi.com/games?page=0&per_page=25"
 
 	req, _ := http.NewRequest("GET", url, nil)
@@ -41,16 +41,22 @@ func GetApiGames(response http.ResponseWriter, request *http.Request) {
 	_ = json.Unmarshal(body, &f)
 
 	//json.NewEncoder(response).Encode(f)
-	collection := client.Database("ivandb").Collection("games")
+	var coll = sessionCopy.DB(mongoConfig.mongoDb).C(mongoConfig.collection)
+	//collection := client.Database("ivandb").Collection("games")
 
 	for _, game := range f.Data {
 		game.Date = strings.Split(game.Date, "T")[0]
-		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-		collection.InsertOne(ctx, game)
+		err := coll.Insert(game)
+		if err != nil {
+			log.Printf("ERROR: fail put msg, %s", err.Error())
+		}
+		//ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		//collection.InsertOne(ctx, game)
 	}
 }
 
 func getGames(response http.ResponseWriter, request *http.Request) {
+	fmt.Println("pozvan sam")
 	var games []Game = getAllGames()
 	var gameData = GameData{
 		Data: games,
@@ -79,7 +85,7 @@ func postComment(response http.ResponseWriter, request *http.Request) {
 		Content: data["content"].(string),
 		Username: data["username"].(string),
 	}
-
+	fmt.Println("pozivam create comment")
 	createComment(comment, gameId)
 	sendMessageToQueue(strconv.Itoa(gameId))
 }
